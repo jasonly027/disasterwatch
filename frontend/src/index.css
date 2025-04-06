@@ -1,12 +1,27 @@
 @import "tailwindcss";
 
+@layer base {
+  /* Work Sans - Regular */
+  @font-face {
+    font-family: "Work Sans";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+  }
+}
+
 @theme {
   --color-licorice: #140316;
   --color-raspberry: #d81e5b;
   --color-vermillion: #f0544f;
+  --color-papaya: #fdf0d5;
+  --color-french-gray: #C7CBD9;
+
+  --font-sans: "Work Sans", sans-serif;
 }
 
 body {
   color: white;
-  background-color: var(--color-licorice);
+  background-color: rgb(61, 58, 58);
 }
