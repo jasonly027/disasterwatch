@@ -36,36 +36,72 @@ function Modal({
   onSubmitDone?: DispatchWithoutAction;
 }) {
   const { register, handleSubmit } = useForm();
-
   const { addPin } = usePins();
+  const imageLabelRef = useRef<HTMLLabelElement>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
 
   const onSubmit = handleSubmit(
-    (data) => {
+    async (data) => {
+      const file = data.image[0] as File;
+      const base64Image = await fileToBase64(file);
+
+      // VLM check
+      const analysisRes = await fetch("http://localhost:8080/api/v1/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base64Image,
+          userDescription: data.description,
+        }),
+      });
+
+      const analysis = await analysisRes.json();
+      if (!analysis.match) {
+        setValidationError(analysis.message || "Image does not match description.");
+        return;
+      }
+
+      // All good — upload pin
       navigator.geolocation.getCurrentPosition(function onSuccess({
         coords: { latitude, longitude },
       }) {
-        console.log(data);
-
         addPin({
           description: data.description as string,
-          image: data.image[0] as File,
+          image: file,
           coordinate: [latitude, longitude],
           danger_level: data.danger as DangerLevel,
         });
       });
-      onSubmitDone();
+
+      setValidationError(null); // clear error
+      onSubmitDone(); // close modal
     },
     (e) => {
       console.error(e);
       if (e.image) imageLabelRef.current?.focus();
-    },
+    }
   );
-
-  const imageLabelRef = useRef<HTMLLabelElement>(null);
 
   return (
     <div className="bg-licorice rounded-xl p-6 shadow-lg min-sm:w-80">
       <form onSubmit={onSubmit}>
+        {/* Error */}
+        {validationError && (
+          <p className="mb-4 text-red-500 text-sm font-medium">
+            {validationError}
+          </p>
+        )}
+
+        {/* Image Input */}
         <label
           ref={imageLabelRef}
           tabIndex={0}
