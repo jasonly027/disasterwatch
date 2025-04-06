@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+@theme {
+  --color-licorice: #140316;
+  --color-raspberry: #d81e5b;
+  --color-vermillion: #f0544f;
+}
+
+body {
+  color: white;
+  background-color: var(--color-licorice);
+}
